@@ -30,7 +30,7 @@ fi
 # Change directory to server directory
 cd dirname/minecraftbe/servername
 
-# Create logs/backups/downloads folder if it doesn't exist
+# Create logs/backups/downloads/updateBackups folder if it doesn't exist
 if [ ! -d "logs" ]; then
     mkdir logs
 fi
@@ -39,6 +39,9 @@ if [ ! -d "downloads" ]; then
 fi
 if [ ! -d "backups" ]; then
     mkdir backups
+fi
+if [ ! -d "updateBackups" ]; then
+    mkdir updateBackups
 fi
 
 # Check if network interfaces are up
@@ -143,6 +146,18 @@ else
         # Download version of Minecraft Bedrock dedicated server if it's not already local
         if [ ! -f "downloads/$DownloadFile" ]; then
             curl -H "Accept-Encoding: identity" -H "Accept-Language: en" -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.$RandNum.212 Safari/537.36" -o "downloads/$DownloadFile" "$DownloadURL"
+        fi
+
+        # Create backup
+        if [ -d "worlds" ]; then
+            echo "Backing up server before update (to minecraftbe/servername/updateBackups folder)"
+            if [ -n "$(which pigz)" ]; then
+                echo "Backing up server (multiple cores) to minecraftbe/servername/updateBackups folder"
+                tar -I pigz -pvcf updateBackups/Version_${InstalledFile}_Final_$(date +%Y.%m.%d.%H.%M.%S).tar.gz worlds
+            else
+                echo "Backing up server (single cored) to minecraftbe/servername/updateBackups folder"
+                tar -pzvcf updateBackups/Version_${InstalledFile}_Final_$(date +%Y.%m.%d.%H.%M.%S).tar.gz worlds
+            fi
         fi
 
         # Install version of Minecraft requested
